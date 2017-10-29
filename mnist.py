@@ -77,12 +77,95 @@ predict_correct = tf.equal(tf.argmax(y_out, 1), tf.argmax(_y_, 1))
 accuracy = tf.reduce_mean(tf.cast(predict_correct, tf.float32))
 tf.summary.scalar("accuracy",accuracy)
 
+
+with tf.name_scope('Convolutional_1') as scope:
+
+# In this section, we visualize the filters of the first convolutional layers
+# We concatenate the filters into one image
+# Credits for the inspiration go to Martin Gorner
+    W1_a = W_conv1                       # [5, 5, 1, 38]
+    W1pad= tf.zeros([5, 5, 1, 1])        # [5, 5, 1, 11]  - four zero kernels for padding
+    # We have a 6 by 6 grid of kernel visualizations. yet we only have 32 filters
+    # Therefore, we concatenate 4 empty filters
+    W1_b = tf.concat([W1_a, W1pad, W1pad, W1pad, W1pad, W1pad, W1pad, W1pad, W1pad, W1pad, W1pad, W1pad], axis=3)   # [5, 5, 1, 49]
+    W1_c = tf.split(W1_b, 49, axis=3)         # 49 x [5, 5, 1, 1]
+    W1_row0 = tf.concat(W1_c[0:7], axis=0)    # [35, 5, 1, 1]
+    W1_row1 = tf.concat(W1_c[7:14], axis=0)   # [35, 5, 1, 1]
+    W1_row2 = tf.concat(W1_c[14:21], axis=0)  # [35, 5, 1, 1]
+    W1_row3 = tf.concat(W1_c[21:28], axis=0)  # [35, 5, 1, 1]
+    W1_row4 = tf.concat(W1_c[28:35], axis=0)  # [35, 5, 1, 1]
+    W1_row5 = tf.concat(W1_c[35:42], axis=0)  # [35, 5, 1, 1]
+    W1_row6 = tf.concat(W1_c[42:49], axis=0)  # [35, 5, 1, 1]
+
+    W1_d = tf.concat([W1_row0, W1_row1, W1_row2, W1_row3, W1_row4, W1_row5, W1_row6], axis=1) # [35, 35, 1, 1]
+    W1_e = tf.reshape(W1_d, [1, 35, 35, 1])
+    W1_f = tf.split(W1_e, 1, 3)
+    W1_g = tf.concat(W1_f[0:1], 0)    
+    '''####################################################################################'''    
+    Wtag = tf.placeholder(tf.string, None)
+    tf.summary.image("images_conv", W1_g, 1)    
+    '''===================================================================================='''
+
+with tf.name_scope('Convolutional_2_a') as scope:
+    W3_a = W_conv2                                           # [5,5,38,64]
+    #W3pad= tf.zeros([5,5,38,n])             # [5,5,38,n]  - n zero kernels for padding
+    #W3_b = tf.concat([W3_a, W3pad], 3)  # [5,5,38,64]
+    # in my case I have exactly 64 output channels so I assign W3_b to W3_a
+    # comment the assignment below and uncomment the tf.zeros and tf.concat statements above to pad
+    # fewer than 64 output channels to exactly 64. You have to change "n" of course!
+    W3_b = W3_a
+    W3_c = tf.split(W3_b, 64, axis=3)                  # 64 x [5,5,38,64]
+    W3_row0 = tf.concat(W3_c[0:8], axis=0)       # [5*8, 5, 38, 1]
+    W3_row1 = tf.concat(W3_c[8:16], axis=0)     # [5*8, 5, 38, 1]
+    W3_row2 = tf.concat(W3_c[16:24], axis=0)    # [5*8, 5, 38, 1]
+    W3_row3 = tf.concat(W3_c[24:32], axis=0)    # [5*8, 5, 38, 1]
+    W3_row4 = tf.concat(W3_c[32:40], axis=0)    # [5*8, 5, 38, 1]
+    W3_row5 = tf.concat(W3_c[40:48], axis=0)    # [5*8, 5, 38, 1]
+    W3_row6 = tf.concat(W3_c[48:56], axis=0)    # [5*8, 5, 38, 1]
+    W3_row7 = tf.concat(W3_c[56:64], axis=0)    # [5*8, 5, 38, 1]
+    W3_d = tf.concat([W3_row0, W3_row1, W3_row2, W3_row3, W3_row4, W3_row5, W3_row6, W3_row7], axis=1) # [64, 64, 38, 1]
+    W3_e = tf.reshape(W3_d, [1, 5*8, 5*8, 38])
+    W3_f = tf.split(W3_e, 38, axis=3)                  # 38 x [1, 64, 64, 1]    
+    W3_g = tf.concat(W3_f[0:19], axis=0)             # [19, 64, 64, 1]        
+
+    '''####################################################################################'''    
+    Wtag = tf.placeholder(tf.string, None)    
+    tf.summary.image("images_conv", W3_g, 19)    
+    '''===================================================================================='''
+
+with tf.name_scope('Convolutional_2_b') as scope:
+    W3_a = W_conv2                                           # [5,5,38,64]
+    #W3pad= tf.zeros([5,5,38,n])             # [5,5,38,n]  - n zero kernels for padding
+    #W3_b = tf.concat([W3_a, W3pad], 3)  # [5,5,38,64]
+    # in my case I have exactly 64 output channels so I assign W3_b to W3_a
+    # comment the assignment below and uncomment the tf.zeros and tf.concat statements above to pad
+    # fewer than 64 output channels to exactly 64. You have to change "n" of course!
+    W3_b = W3_a
+    W3_c = tf.split(W3_b, 64, axis=3)                  # 64 x [5,5,38,64]
+    W3_row0 = tf.concat(W3_c[0:8], axis=0)       # [5*8, 5, 38, 1]
+    W3_row1 = tf.concat(W3_c[8:16], axis=0)     # [5*8, 5, 38, 1]
+    W3_row2 = tf.concat(W3_c[16:24], axis=0)    # [5*8, 5, 38, 1]
+    W3_row3 = tf.concat(W3_c[24:32], axis=0)    # [5*8, 5, 38, 1]
+    W3_row4 = tf.concat(W3_c[32:40], axis=0)    # [5*8, 5, 38, 1]
+    W3_row5 = tf.concat(W3_c[40:48], axis=0)    # [5*8, 5, 38, 1]
+    W3_row6 = tf.concat(W3_c[48:56], axis=0)    # [5*8, 5, 38, 1]
+    W3_row7 = tf.concat(W3_c[56:64], axis=0)    # [5*8, 5, 38, 1]
+    W3_d = tf.concat([W3_row0, W3_row1, W3_row2, W3_row3, W3_row4, W3_row5, W3_row6, W3_row7], axis=1) # [64, 64, 38, 1]
+    W3_e = tf.reshape(W3_d, [1, 5*8, 5*8, 38])
+    W3_f = tf.split(W3_e, 38, axis=3)                  # 38 x [1, 64, 64, 1]    
+    W3_g = tf.concat(W3_f[19:38], axis=0)             # [19, 64, 64, 1]        
+
+    '''####################################################################################'''    
+    Wtag = tf.placeholder(tf.string, None)    
+    tf.summary.image("images_conv", W3_g, 19)    
+    '''===================================================================================='''
+
 #initialize all necessary variable
 merged = tf.summary.merge_all()
 init = tf.global_variables_initializer()
 
 with tf.Session() as sess:
-    writer = tf.summary.FileWriter("logs/2", sess.graph)
+    writer = tf.summary.FileWriter("logs/3", sess.graph)
     #init
     sess.run(init)    
     #run
@@ -103,6 +186,7 @@ with tf.Session() as sess:
     print('test accuracy %g' % accuracy.eval(feed_dict={
       _x_: data.test.images, _y_: data.test.labels, keep_prob: 1.0}))
 
+    sess.close()
 
 
 
